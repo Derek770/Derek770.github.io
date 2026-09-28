@@ -5,7 +5,6 @@ import L from 'leaflet';
 import { Vehicle, Driver, Shift, GpsPoint } from '@/types';
 import VehicleDrawer from './VehicleDrawer';
 import RoutePlaybackControl from './RoutePlaybackControl';
-import TelematicsSimulator from './TelematicsSimulator';
 import { Layers, Maximize2, Compass } from 'lucide-react';
 
 interface FleetMapInnerProps {
@@ -298,8 +297,6 @@ export default function FleetMapInner({
       {/* Map Target Canvas */}
       <div ref={mapContainerRef} className="w-full h-full z-0" />
 
-      {/* Floating Telematics GPS Ping Tester */}
-      <TelematicsSimulator vehicles={vehicles} onPingSent={onRefresh} />
 
       {/* Map Control Buttons: Recenter & Audit past route */}
       <div className="absolute top-4 right-4 z-[990] flex items-center gap-2">

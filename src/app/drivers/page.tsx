@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/layout/Header';
+import AddDriverModal from '@/components/drivers/AddDriverModal';
 import { Driver, Vehicle } from '@/types';
-import { apiGetDrivers, apiGetVehicles } from '@/lib/store';
+import { apiGetDrivers, apiGetVehicles, apiDeleteDriver } from '@/lib/store';
 import { formatINR, formatDate } from '@/lib/utils';
 import {
   Users,
@@ -16,6 +17,7 @@ import {
   Plus,
   Search,
   ExternalLink,
+  Trash2,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -25,6 +27,7 @@ export default function DriversPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState<'ALL' | 'ACTIVE' | 'DEFICIT'>('ALL');
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const loadData = async () => {
     try {
@@ -41,6 +44,17 @@ export default function DriversPage() {
   useEffect(() => {
     loadData();
   }, []);
+
+  const handleDeleteDriver = async (id: string, name: string) => {
+    if (confirm(`Are you sure you want to remove driver ${name} from the active registry?`)) {
+      try {
+        await apiDeleteDriver(id);
+        loadData();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
 
   const filteredDrivers = drivers.filter((driver) => {
     const matchesSearch =
@@ -106,7 +120,7 @@ export default function DriversPage() {
           </div>
         </div>
 
-        {/* Filter bar */}
+        {/* Filter & Action bar */}
         <div className="flex flex-wrap items-center justify-between gap-4 p-3 rounded-xl bg-slate-900/60 border border-slate-800">
           <div className="relative flex-1 min-w-[240px] max-w-md">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -119,29 +133,57 @@ export default function DriversPage() {
             />
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800">
+              <button
+                onClick={() => setFilterStatus('ALL')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  filterStatus === 'ALL'
+                    ? 'bg-emerald-600 text-slate-950 font-bold'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                All Drivers ({drivers.length})
+              </button>
+              <button
+                onClick={() => setFilterStatus('DEFICIT')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  filterStatus === 'DEFICIT'
+                    ? 'bg-amber-600 text-slate-950 font-bold'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Pending Deficit ({deficitCount})
+              </button>
+            </div>
+
             <button
-              onClick={() => setFilterStatus('ALL')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                filterStatus === 'ALL'
-                  ? 'bg-emerald-600 text-slate-950 font-bold'
-                  : 'text-slate-400 hover:text-white bg-slate-950'
-              }`}
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs shadow-sm transition-all"
             >
-              All Drivers ({drivers.length})
-            </button>
-            <button
-              onClick={() => setFilterStatus('DEFICIT')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                filterStatus === 'DEFICIT'
-                  ? 'bg-amber-600 text-slate-950 font-bold'
-                  : 'text-slate-400 hover:text-white bg-slate-950'
-              }`}
-            >
-              Pending Deficit ({deficitCount})
+              <Plus className="w-4 h-4 stroke-[2.5]" />
+              <span>+ Onboard New Driver</span>
             </button>
           </div>
         </div>
+
+        {/* Empty state */}
+        {filteredDrivers.length === 0 && (
+          <div className="p-12 rounded-2xl bg-slate-900/40 border border-dashed border-slate-800 text-center space-y-3">
+            <Users className="w-12 h-12 text-slate-600 mx-auto" />
+            <h4 className="text-base font-bold text-white">No Drivers Found</h4>
+            <p className="text-xs text-slate-400 max-w-sm mx-auto">
+              Your driver directory is currently empty. Click below to onboard your first commercial driver.
+            </p>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs shadow-md transition-colors"
+            >
+              <Plus className="w-4 h-4 stroke-[2.5]" />
+              <span>Onboard First Driver</span>
+            </button>
+          </div>
+        )}
 
         {/* Drivers Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -179,9 +221,18 @@ export default function DriversPage() {
                       </div>
                     </div>
 
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-950/60 text-emerald-400 border border-emerald-800/60">
-                      {driver.status}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-950/60 text-emerald-400 border border-emerald-800/60">
+                        {driver.status}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteDriver(driver.id, driver.full_name)}
+                        className="p-1 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-slate-800 transition-colors"
+                        title="Remove Driver"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
 
                   {/* License & Deposit */}
@@ -256,6 +307,14 @@ export default function DriversPage() {
           })}
         </div>
       </div>
+
+      {/* Add Driver Modal */}
+      {showAddModal && (
+        <AddDriverModal
+          onClose={() => setShowAddModal(false)}
+          onSuccess={loadData}
+        />
+      )}
     </div>
   );
 }

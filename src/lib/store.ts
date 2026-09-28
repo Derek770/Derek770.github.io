@@ -7,10 +7,42 @@ export async function apiGetVehicles(): Promise<Vehicle[]> {
   return data.data || [];
 }
 
+export async function apiCreateVehicle(payload: Partial<Vehicle>) {
+  const res = await fetch('/api/vehicles', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  return res.json();
+}
+
+export async function apiDeleteVehicle(id: string) {
+  const res = await fetch(`/api/vehicles?id=${id}`, {
+    method: 'DELETE',
+  });
+  return res.json();
+}
+
 export async function apiGetDrivers(): Promise<Driver[]> {
   const res = await fetch('/api/drivers', { cache: 'no-store' });
   const data = await res.json();
   return data.data || [];
+}
+
+export async function apiCreateDriver(payload: Partial<Driver>) {
+  const res = await fetch('/api/drivers', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  return res.json();
+}
+
+export async function apiDeleteDriver(id: string) {
+  const res = await fetch(`/api/drivers?id=${id}`, {
+    method: 'DELETE',
+  });
+  return res.json();
 }
 
 export async function apiGetShifts(): Promise<Shift[]> {
@@ -109,5 +141,10 @@ export async function apiAddExpense(payload: {
 
 export async function apiResetSeeds() {
   const res = await fetch('/api/seed', { method: 'POST' });
+  return res.json();
+}
+
+export async function apiClearAllData() {
+  const res = await fetch('/api/clear', { method: 'POST' });
   return res.json();
 }

@@ -70,15 +70,27 @@ export default function DamageInspector({
         })}
       </div>
 
-      {/* Mock photo attachment */}
+      {/* Vehicle photo upload */}
       <div className="pt-2 border-t border-slate-800/60 flex items-center justify-between">
         <div className="flex items-center gap-2 text-xs text-slate-400">
           <Camera className="w-4 h-4 text-emerald-400" />
-          <span>Attach Inspection Photo:</span>
+          <span>Vehicle Inspection Photo:</span>
         </div>
         <label className="cursor-pointer text-xs font-semibold text-emerald-400 hover:text-emerald-300 bg-emerald-950/40 px-2.5 py-1 rounded border border-emerald-800/40 transition-colors">
-          Browse / Snap
-          <input type="file" accept="image/*" className="hidden" />
+          Browse / Camera
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              if (e.target.files && e.target.files[0]) {
+                const name = e.target.files[0].name;
+                if (!selectedItems.includes(`Photo attached: ${name}`)) {
+                  onChange([...selectedItems, `Photo attached: ${name}`]);
+                }
+              }
+            }}
+          />
         </label>
       </div>
     </div>

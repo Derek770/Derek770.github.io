@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/layout/Header';
+import AddVehicleModal from '@/components/vehicles/AddVehicleModal';
 import { Vehicle, Driver } from '@/types';
-import { apiGetVehicles, apiGetDrivers } from '@/lib/store';
+import { apiGetVehicles, apiGetDrivers, apiDeleteVehicle, apiClearAllData } from '@/lib/store';
 import { formatINR, formatDate, checkDocStatus, getVehicleDocComplianceList } from '@/lib/utils';
 import {
   Car,
@@ -19,6 +20,9 @@ import {
   Filter,
   ArrowRight,
   ExternalLink,
+  Plus,
+  Trash2,
+  RotateCcw,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -28,6 +32,7 @@ export default function VehiclesPage() {
   const [loading, setLoading] = useState(true);
   const [filterMode, setFilterMode] = useState<'ALL' | 'ALERTS_ONLY' | 'EXPIRED'>('ALL');
   const [search, setSearch] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const loadData = async () => {
     try {
@@ -44,6 +49,28 @@ export default function VehiclesPage() {
   useEffect(() => {
     loadData();
   }, []);
+
+  const handleDeleteVehicle = async (id: string, plate: string) => {
+    if (confirm(`Are you sure you want to remove vehicle ${plate} from the fleet registry?`)) {
+      try {
+        await apiDeleteVehicle(id);
+        loadData();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (confirm('Warning: This will remove all vehicle, driver, and shift records to give you a completely clean, empty system. Continue?')) {
+      try {
+        await apiClearAllData();
+        loadData();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
 
   // Filter logic
   const filteredVehicles = vehicles.filter((v) => {
@@ -147,7 +174,7 @@ export default function VehiclesPage() {
           </button>
         </div>
 
-        {/* Search & Filter Bar */}
+        {/* Search & Action Bar */}
         <div className="flex flex-wrap items-center justify-between gap-4 p-3 rounded-xl bg-slate-900/60 border border-slate-800">
           <div className="relative flex-1 min-w-[240px] max-w-md">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -161,11 +188,43 @@ export default function VehiclesPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-400 font-mono">
-              Showing {filteredVehicles.length} of {vehicles.length} vehicles
-            </span>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs shadow-sm transition-all"
+            >
+              <Plus className="w-4 h-4 stroke-[2.5]" />
+              <span>+ Register New Cab</span>
+            </button>
+
+            {vehicles.length > 0 && (
+              <button
+                onClick={handleClearAll}
+                className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-rose-950/60 text-slate-400 hover:text-rose-400 border border-slate-700 text-xs font-medium transition-colors"
+                title="Wipe records to start completely fresh"
+              >
+                Clear All Records
+              </button>
+            )}
           </div>
         </div>
+
+        {/* Empty state */}
+        {filteredVehicles.length === 0 && (
+          <div className="p-12 rounded-2xl bg-slate-900/40 border border-dashed border-slate-800 text-center space-y-3">
+            <Car className="w-12 h-12 text-slate-600 mx-auto" />
+            <h4 className="text-base font-bold text-white">No Vehicles in Registry</h4>
+            <p className="text-xs text-slate-400 max-w-sm mx-auto">
+              Your fleet registry is currently empty. Click below to add your first commercial taxi.
+            </p>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs shadow-md transition-colors"
+            >
+              <Plus className="w-4 h-4 stroke-[2.5]" />
+              <span>Register First Cab</span>
+            </button>
+          </div>
+        )}
 
         {/* Vehicles Grid */}
         <div className="space-y-4">
@@ -234,6 +293,14 @@ export default function VehiclesPage() {
                         Check-In
                       </Link>
                     ) : null}
+
+                    <button
+                      onClick={() => handleDeleteVehicle(vehicle.id, vehicle.plate_number)}
+                      className="p-2 rounded-lg bg-slate-800 hover:bg-rose-950/60 text-slate-400 hover:text-rose-400 border border-slate-700 transition-colors"
+                      title="Remove Vehicle"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
 
@@ -254,9 +321,9 @@ export default function VehiclesPage() {
                   </div>
 
                   <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
-                    <span className="text-[10px] text-slate-400 block mb-0.5">Purchase Date & Cost</span>
-                    <span className="text-slate-200 font-mono">
-                      {formatDate(vehicle.purchase_date)} • {formatINR(vehicle.purchase_cost)}
+                    <span className="text-[10px] text-slate-400 block mb-0.5">Daily Lease Rate</span>
+                    <span className="text-amber-300 font-mono font-bold">
+                      {formatINR(vehicle.daily_rent_rate || 800)} / shift
                     </span>
                   </div>
 
@@ -338,6 +405,14 @@ export default function VehiclesPage() {
           })}
         </div>
       </div>
+
+      {/* Add Vehicle Modal */}
+      {showAddModal && (
+        <AddVehicleModal
+          onClose={() => setShowAddModal(false)}
+          onSuccess={loadData}
+        />
+      )}
     </div>
   );
 }

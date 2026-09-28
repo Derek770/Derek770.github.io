@@ -10,10 +10,9 @@ import {
   Users,
   Car,
   Receipt,
-  RotateCcw,
   Zap,
+  ShieldCheck,
 } from 'lucide-react';
-import { apiResetSeeds } from '@/lib/store';
 
 const navItems = [
   { label: 'Overview', href: '/', icon: LayoutDashboard },
@@ -26,21 +25,6 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const [resetting, setResetting] = React.useState(false);
-
-  const handleResetSeeds = async () => {
-    if (confirm('Reset mock database back to default 5 vehicles, 5 drivers, and active shifts?')) {
-      setResetting(true);
-      try {
-        await apiResetSeeds();
-        window.location.reload();
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setResetting(false);
-      }
-    }
-  };
 
   return (
     <aside className="w-64 bg-slate-950 border-r border-slate-800/80 flex flex-col justify-between shrink-0 h-screen sticky top-0 select-none z-30">
@@ -69,10 +53,10 @@ export default function Sidebar() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
-            Delhi-NCR Fleet Hub
+            Commercial Fleet Hub
           </span>
-          <span className="text-[10px] text-slate-400 font-mono bg-slate-900/90 px-1.5 py-0.5 rounded border border-slate-700/50">
-            5 CABS
+          <span className="text-[10px] text-emerald-300 font-mono bg-emerald-950 px-2 py-0.5 rounded border border-emerald-700/50 font-bold">
+            ONLINE
           </span>
         </div>
 
@@ -108,18 +92,17 @@ export default function Sidebar() {
         </nav>
       </div>
 
-      {/* Footer / Yard Supervisor info & reset */}
+      {/* Footer / Yard Supervisor info */}
       <div className="p-4 border-t border-slate-800/60 space-y-3 bg-slate-950/60">
-        <button
-          onClick={handleResetSeeds}
-          disabled={resetting}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-900 border border-slate-800 rounded-lg transition-colors"
-        >
-          <RotateCcw className={`w-3.5 h-3.5 ${resetting ? 'animate-spin' : ''}`} />
-          {resetting ? 'Resetting Data...' : 'Reset Mock Seed Data'}
-        </button>
+        <div className="flex items-center justify-between text-[11px] text-slate-400">
+          <span className="flex items-center gap-1.5">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Telematics System</span>
+          </span>
+          <span className="font-mono text-emerald-400 font-semibold">Active</span>
+        </div>
 
-        <div className="flex items-center gap-3 pt-1">
+        <div className="flex items-center gap-3 pt-1 border-t border-slate-900">
           <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-xs text-emerald-400">
             SY
           </div>

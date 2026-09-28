@@ -109,7 +109,7 @@ export default function DashboardOverviewPage() {
           <div>
             <h2 className="text-sm font-semibold text-slate-200">Yard Supervisor Quick Handoffs</h2>
             <p className="text-xs text-slate-400">
-              One-click shift check-out, vehicle returns, rent collection, and telematics testing
+              One-click shift check-out, vehicle returns, rent collection, and fleet operations
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2.5">

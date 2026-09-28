@@ -440,6 +440,17 @@ class FleetStore {
     return this.data;
   }
 
+  public clearAllData() {
+    this.data = {
+      vehicles: [],
+      drivers: [],
+      shifts: [],
+      expenses: [],
+      collections: [],
+    };
+    return this.data;
+  }
+
   // Vehicles
   public getVehicles(): Vehicle[] {
     return this.data.vehicles;
@@ -447,6 +458,20 @@ class FleetStore {
 
   public getVehicleById(id: string): Vehicle | undefined {
     return this.data.vehicles.find((v) => v.id === id || v.plate_number.replace(/\s+/g, '') === id.replace(/\s+/g, ''));
+  }
+
+  public addVehicle(vehicle: Omit<Vehicle, 'id'>): Vehicle {
+    const id = `veh-${Date.now().toString().slice(-6)}`;
+    const newVehicle: Vehicle = { ...vehicle, id };
+    this.data.vehicles.unshift(newVehicle);
+    return newVehicle;
+  }
+
+  public deleteVehicle(id: string): boolean {
+    const idx = this.data.vehicles.findIndex((v) => v.id === id);
+    if (idx === -1) return false;
+    this.data.vehicles.splice(idx, 1);
+    return true;
   }
 
   public updateVehicle(id: string, updates: Partial<Vehicle>): Vehicle | null {
@@ -463,6 +488,20 @@ class FleetStore {
 
   public getDriverById(id: string): Driver | undefined {
     return this.data.drivers.find((d) => d.id === id);
+  }
+
+  public addDriver(driver: Omit<Driver, 'id'>): Driver {
+    const id = `drv-${Date.now().toString().slice(-6)}`;
+    const newDriver: Driver = { ...driver, id };
+    this.data.drivers.unshift(newDriver);
+    return newDriver;
+  }
+
+  public deleteDriver(id: string): boolean {
+    const idx = this.data.drivers.findIndex((d) => d.id === id);
+    if (idx === -1) return false;
+    this.data.drivers.splice(idx, 1);
+    return true;
   }
 
   public updateDriver(id: string, updates: Partial<Driver>): Driver | null {
